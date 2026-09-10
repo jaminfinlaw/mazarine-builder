@@ -69,17 +69,9 @@ function CadMesh({
   );
 }
 
-export function DockBoxModel({ config, onLoad }: { config: DockBoxConfig; onLoad?: () => void }) {
+export function DockBoxModel({ config }: { config: DockBoxConfig }) {
   const lidRotation = config.lidOpen ? -1.08 : 0;
   const [logoTexture, setLogoTexture] = useState<Texture | null>(null);
-
-  // Notify parent when component mounts (models have been loaded by useGLTF hooks)
-  useEffect(() => {
-    if (onLoad) {
-      const timer = setTimeout(onLoad, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [onLoad]);
 
   useEffect(() => {
     // Cleanup: always clear texture when logo URL changes
@@ -232,7 +224,6 @@ export function DockBoxModel({ config, onLoad }: { config: DockBoxConfig; onLoad
             maxWidth={1.4}
             outlineWidth={0.02}
             outlineColor={config.frontSign === "acrylic" ? "#0f172a" : "#e2e8f0"}
-            font={config.selectedFont}
           >
             {config.logoMode === "text" ? config.logoText || "AURORA" : "CUSTOM"}
           </Text>
@@ -262,7 +253,6 @@ export function DockBoxModel({ config, onLoad }: { config: DockBoxConfig; onLoad
             maxWidth={1.4}
             outlineWidth={0.02}
             outlineColor={config.rearSign === "acrylic" ? "#0f172a" : "#e2e8f0"}
-            font={config.selectedFont}
           >
             {config.logoMode === "text" ? config.logoText || "AURORA" : "CUSTOM"}
           </Text>

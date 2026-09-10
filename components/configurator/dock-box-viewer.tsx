@@ -1,6 +1,6 @@
-import { ContactShadows, Environment, OrbitControls, Text } from "@react-three/drei";
+import { ContactShadows, Environment, OrbitControls, Text, useProgress } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CameraControls, type CameraPreset, cameraPresets } from "./camera-controls";
@@ -46,9 +46,29 @@ function DebugOverlay({
   );
 }
 
+function ModelLoader() {
+  const { active, errors, item, loaded, progress, total } = useProgress();
+  const displayProgress = total > 0 ? Math.round(progress) : 0;
+  const label = errors.length > 0
+    ? "Model failed to load"
+    : active
+      ? item ? `Loading ${item.split("/").pop()}` : "Loading model"
+      : "Preparing viewer";
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/80 px-8 text-slate-200">
+      <div className="text-sm font-medium uppercase tracking-[0.28rem]">{label}</div>
+      <div className="h-1.5 w-full max-w-64 overflow-hidden rounded-full bg-slate-700">
+        <div className="h-full bg-sky-300 transition-[width] duration-200" style={{ width: `${displayProgress}%` }} />
+      </div>
+      <div className="text-xs tabular-nums text-slate-400">{errors.length > 0 ? "Refresh to try again." : `${loaded} of ${total || 4} assets · ${displayProgress}%`}</div>
+    </div>
+  );
+}
+
 export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) {
   const [isReady, setIsReady] = useState(false);
-  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const { active, errors } = useProgress();
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const config = useConfigurationStore((state) => state.config);
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
@@ -77,7 +97,9 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         <spotLight position={[0, 7.5, 3.5]} intensity={1.15} angle={0.35} penumbra={0.6} color="#f5f8ff" />
 
         <CameraControls preset={cameraPreset} controlsRef={controlsRef} />
-        <DockBoxModel config={config} onLoad={() => setModelsLoaded(true)} />
+        <Suspense fallback={null}>
+          <DockBoxModel config={config} />
+        </Suspense>
         <DebugOverlay enabled={debugMode} />
         <Environment preset="city" />
         <ContactShadows position={[0, -1.9, 0]} scale={12} blur={2.2} opacity={0.8} far={10} />
@@ -105,11 +127,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         </div>
       )}
 
-      {(!isReady || !modelsLoaded) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-medium tracking-[0.28rem] text-slate-200 uppercase">
-          Loading model
-        </div>
-      )}
+      {(!isReady || active || errors.length > 0) && <ModelLoader />}
     </div>
   );
 }
