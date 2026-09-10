@@ -10,9 +10,8 @@ import {
 } from "three";
 
 import type { DockBoxConfig } from "@/lib/configuration";
-import { cadTransforms } from "@/lib/cad-transforms";
+import { cadTransforms, shellMaterial, type CadTransform } from "@/lib/cad-transforms";
 
-const bodyColor = "#e8e1d7";
 const hardwareColor = "#dfe4eb";
 const blackInterior = "#111827";
 
@@ -24,7 +23,7 @@ function CadMesh({
   roughness,
 }: {
   file: string;
-  transform: [number, number, number];
+  transform: CadTransform;
   colorOverride?: string;
   metalness?: number;
   roughness?: number;
@@ -63,14 +62,14 @@ function CadMesh({
   }, [cloned, colorOverride, metalness, roughness]);
 
   return (
-    <group position={transform} scale={[1, 1, 1]}>
+    <group position={transform.position} rotation={transform.rotation} scale={transform.scale}>
       <primitive object={cloned} />
     </group>
   );
 }
 
 export function DockBoxModel({ config }: { config: DockBoxConfig }) {
-  const lidRotation = config.lidOpen ? -1.08 : 0;
+  const lidRotation = config.lidOpen ? cadTransforms.lid.openRotation : cadTransforms.lid.closedRotation;
   const [logoTexture, setLogoTexture] = useState<Texture | null>(null);
 
   useEffect(() => {
@@ -112,42 +111,50 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
     <group position={[0, -0.1, 0]} rotation={[0, 0, 0]} scale={[0.92, 0.92, 0.92]}>
       <CadMesh
         file="/models/body.glb"
-        transform={cadTransforms.body.position}
-        colorOverride={bodyColor}
-        metalness={0.08}
-        roughness={0.88}
+        transform={cadTransforms.body}
+        colorOverride={shellMaterial.color}
+        metalness={shellMaterial.metalness}
+        roughness={shellMaterial.roughness}
       />
 
-      <group position={[0.12, 0.46, 0.72]}>
-        <group rotation={[lidRotation, 0, 0]}>
+      <group position={cadTransforms.lid.hingePivot}>
+        <group rotation={lidRotation}>
+          <group position={[-cadTransforms.lid.hingePivot[0], -cadTransforms.lid.hingePivot[1], -cadTransforms.lid.hingePivot[2]]}>
           <CadMesh
             file="/models/lid.glb"
-            transform={cadTransforms.lid.position}
-            colorOverride="#e5e0d8"
-            metalness={0.08}
-            roughness={0.82}
+            transform={cadTransforms.lid.mesh}
+            colorOverride={shellMaterial.color}
+            metalness={shellMaterial.metalness}
+            roughness={shellMaterial.roughness}
           />
+          <CadMesh
+            file="/models/inside_cover.glb"
+            transform={cadTransforms.insideCover}
+            colorOverride={shellMaterial.color}
+            metalness={shellMaterial.metalness}
+            roughness={shellMaterial.roughness}
+          />
+          <mesh position={[0, 0.32, 0.12]} castShadow>
+            <boxGeometry args={[1.7, 0.56, 0.03]} />
+            <meshStandardMaterial
+              color={config.insideArtwork.mode === "none" ? blackInterior : "#eef4ff"}
+              emissive={config.insideArtwork.mode === "none" ? "#000000" : config.ledColor}
+              emissiveIntensity={config.insideArtwork.mode === "none" ? 0 : 0.8}
+              metalness={0.32}
+              roughness={0.38}
+            />
+          </mesh>
+          </group>
         </group>
       </group>
 
       <CadMesh
         file="/models/avc_insert.glb"
-        transform={cadTransforms.avcInsert.position}
-        colorOverride="#1f2937"
-        metalness={0.2}
-        roughness={0.8}
+        transform={cadTransforms.avcInsert}
+        colorOverride={shellMaterial.color}
+        metalness={shellMaterial.metalness}
+        roughness={shellMaterial.roughness}
       />
-
-      <mesh position={[0, 0.32, 0.12]} castShadow>
-        <boxGeometry args={[1.7, 0.56, 0.08]} />
-        <meshStandardMaterial
-          color={config.insideArtwork.mode === "none" ? blackInterior : "#eef4ff"}
-          emissive={config.insideArtwork.mode === "none" ? "#000000" : config.ledColor}
-          emissiveIntensity={config.insideArtwork.mode === "none" ? 0 : 0.8}
-          metalness={0.32}
-          roughness={0.38}
-        />
-      </mesh>
 
       {Array.from({ length: storageCount }).map((_, index) => {
         const total = Math.max(storageCount, 2);

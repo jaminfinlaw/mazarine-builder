@@ -1,24 +1,37 @@
-import { ContactShadows, Environment, OrbitControls, Text, useProgress } from "@react-three/drei";
+import { ContactShadows, Environment, Line, OrbitControls, Text, useProgress } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CameraControls, type CameraPreset, cameraPresets } from "./camera-controls";
 import { DockBoxModel } from "./dock-box-model";
 import { useConfigurationStore } from "./configuration-store";
+import { cadTransforms } from "@/lib/cad-transforms";
+
+const subscribeToDebugMode = () => () => {};
+
+function useDebugMode() {
+  return useSyncExternalStore(
+    subscribeToDebugMode,
+    () => new URLSearchParams(window.location.search).get("debug") === "1",
+    () => false,
+  );
+}
 
 function DebugOverlay({
   enabled,
+  lidOpen,
 }: {
   enabled: boolean;
+  lidOpen: boolean;
 }) {
   const { camera } = useThree();
   const boxes = useMemo(
     () => [
-      { name: "body", size: [1.9, 0.86, 0.79], pos: [0, 0, 0], color: "#7dd3fc" },
-      { name: "lid", size: [1.9, 0.18, 0.8], pos: [0, 0.48, -0.18], color: "#a7f3d0" },
-      { name: "insideCover", size: [0.36, 0.83, 0.32], pos: [0, 0.08, 0.08], color: "#f9a8d4" },
-      { name: "avcInsert", size: [0.3, 0.77, 0.12], pos: [0, -0.15, 0.08], color: "#fcd34d" },
+      { name: "body", size: [1.907, 0.866, 0.787], pos: cadTransforms.body.position, color: "#7dd3fc" },
+      { name: "lid", size: [1.909, 0.162, 0.791], pos: cadTransforms.lid.mesh.position, color: "#a7f3d0" },
+      { name: "inside cover", size: [0.355, 0.828, 0.315], pos: cadTransforms.insideCover.position, color: "#f9a8d4" },
+      { name: "AVC insert", size: [0.304, 0.768, 0.112], pos: cadTransforms.avcInsert.position, color: "#fcd34d" },
     ],
     [],
   );
@@ -28,6 +41,9 @@ function DebugOverlay({
   return (
     <>
       <axesHelper args={[2.4]} />
+      <Line points={[[-0.95, cadTransforms.lid.hingePivot[1], cadTransforms.lid.hingePivot[2]], [0.95, cadTransforms.lid.hingePivot[1], cadTransforms.lid.hingePivot[2]]]} color="#fb7185" lineWidth={2} />
+      <mesh position={cadTransforms.lid.hingePivot}><sphereGeometry args={[0.045, 12, 12]} /><meshBasicMaterial color="#fb7185" /></mesh>
+      <Text position={[0, cadTransforms.lid.hingePivot[1] + 0.1, cadTransforms.lid.hingePivot[2]]} fontSize={0.07} color="#fb7185" anchorX="center">hinge axis</Text>
       {boxes.map((box) => (
         <group key={box.name} position={box.pos as [number, number, number]}>
           <mesh>
@@ -37,10 +53,11 @@ function DebugOverlay({
           <Text position={[0, box.size[1] / 2 + 0.18, 0]} fontSize={0.09} color={box.color} anchorX="center" anchorY="middle">
             {box.name}
           </Text>
+          <mesh><sphereGeometry args={[0.025, 8, 8]} /><meshBasicMaterial color={box.color} /></mesh>
         </group>
       ))}
       <Text position={[0, 1.5, 0]} fontSize={0.12} color="#f8fafc" anchorX="center" anchorY="middle">
-        {`Cam: ${camera.position.toArray().map((v) => v.toFixed(2)).join(", ")}`}
+        {`Cam: ${camera.position.toArray().map((v) => v.toFixed(2)).join(", ")} | lid ${lidOpen ? "open" : "closed"}`}
       </Text>
     </>
   );
@@ -68,10 +85,10 @@ function ModelLoader() {
 
 export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) {
   const [isReady, setIsReady] = useState(false);
+  const debugMode = useDebugMode();
   const { active, errors } = useProgress();
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const config = useConfigurationStore((state) => state.config);
-  const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
 
   return (
     <div className="relative h-[440px] w-full overflow-hidden rounded-[2rem] border border-slate-200/15 bg-[#091d2e] shadow-[0_30px_60px_rgba(2,6,23,0.55)] md:h-[760px]">
@@ -100,7 +117,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         <Suspense fallback={null}>
           <DockBoxModel config={config} />
         </Suspense>
-        <DebugOverlay enabled={debugMode} />
+        <DebugOverlay enabled={debugMode} lidOpen={config.lidOpen} />
         <Environment preset="city" />
         <ContactShadows position={[0, -1.9, 0]} scale={12} blur={2.2} opacity={0.8} far={10} />
 

@@ -24,6 +24,10 @@ export function ConfiguratorPanel({
   const updateConfig = useConfigurationStore((state) => state.updateConfig);
 
   useEffect(() => {
+    void useConfigurationStore.persist.rehydrate();
+  }, []);
+
+  useEffect(() => {
     const urlConfig = readConfigFromUrl();
     if (urlConfig) {
       applyConfig(urlConfig);

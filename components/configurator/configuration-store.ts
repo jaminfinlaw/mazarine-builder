@@ -20,6 +20,7 @@ export const useConfigurationStore = create<ConfigurationState>()(
     }),
     {
       name: "mazarine-custom-config",
+      skipHydration: true,
       partialize: (state) => ({ config: state.config }),
       merge: (persisted, current) => ({
         ...current,
