@@ -1,16 +1,56 @@
-import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { ContactShadows, Environment, OrbitControls, Text } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { useMemo, useRef, useState } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CameraControls, type CameraPreset, cameraPresets } from "./camera-controls";
 import { DockBoxModel } from "./dock-box-model";
 import { useConfigurationStore } from "./configuration-store";
 
+function DebugOverlay({
+  enabled,
+}: {
+  enabled: boolean;
+}) {
+  const { camera } = useThree();
+  const boxes = useMemo(
+    () => [
+      { name: "body", size: [1.9, 0.86, 0.79], pos: [0, 0, 0], color: "#7dd3fc" },
+      { name: "lid", size: [1.9, 0.18, 0.8], pos: [0, 0.48, -0.18], color: "#a7f3d0" },
+      { name: "insideCover", size: [0.36, 0.83, 0.32], pos: [0, 0.08, 0.08], color: "#f9a8d4" },
+      { name: "avcInsert", size: [0.3, 0.77, 0.12], pos: [0, -0.15, 0.08], color: "#fcd34d" },
+    ],
+    [],
+  );
+
+  if (!enabled) return null;
+
+  return (
+    <>
+      <axesHelper args={[2.4]} />
+      {boxes.map((box) => (
+        <group key={box.name} position={box.pos as [number, number, number]}>
+          <mesh>
+            <boxGeometry args={box.size as [number, number, number]} />
+            <meshBasicMaterial wireframe color={box.color} transparent opacity={0.8} />
+          </mesh>
+          <Text position={[0, box.size[1] / 2 + 0.18, 0]} fontSize={0.09} color={box.color} anchorX="center" anchorY="middle">
+            {box.name}
+          </Text>
+        </group>
+      ))}
+      <Text position={[0, 1.5, 0]} fontSize={0.12} color="#f8fafc" anchorX="center" anchorY="middle">
+        {`Cam: ${camera.position.toArray().map((v) => v.toFixed(2)).join(", ")}`}
+      </Text>
+    </>
+  );
+}
+
 export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) {
   const [isReady, setIsReady] = useState(false);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const config = useConfigurationStore((state) => state.config);
+  const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
 
   return (
     <div className="relative h-[440px] w-full overflow-hidden rounded-[2rem] border border-slate-200/15 bg-[#091d2e] shadow-[0_30px_60px_rgba(2,6,23,0.55)] md:h-[760px]">
@@ -20,36 +60,49 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         camera={{ position: cameraPresets.front.position, fov: 32 }}
         onCreated={() => setIsReady(true)}
       >
-        <color attach="background" args={["#091d2e"]} />
-        <fog attach="fog" args={["#091d2e", 9, 19]} />
-        <ambientLight intensity={0.95} />
+        <color attach="background" args={["#0a1b2b"]} />
+        <fog attach="fog" args={["#0a1b2b", 9, 22]} />
+
+        <ambientLight intensity={0.8} />
+        <hemisphereLight args={["#edf6ff", "#1e293b", 0.6]} />
         <directionalLight
           castShadow
-          position={[6, 8, 5]}
-          intensity={1.8}
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          position={[5.5, 7.5, 6]}
+          intensity={1.7}
+          shadow-mapSize-width={1536}
+          shadow-mapSize-height={1536}
+          shadow-bias={-0.0001}
         />
-        <spotLight position={[0, 7, 4]} intensity={1.3} angle={0.45} penumbra={0.7} />
+        <spotLight position={[0, 7.5, 3.5]} intensity={1.15} angle={0.35} penumbra={0.6} color="#f5f8ff" />
 
         <CameraControls preset={cameraPreset} controlsRef={controlsRef} />
         <DockBoxModel config={config} />
+        <DebugOverlay enabled={debugMode} />
         <Environment preset="city" />
-        <ContactShadows position={[0, -2.4, 0]} scale={12} blur={2.5} opacity={0.75} far={9} />
+        <ContactShadows position={[0, -1.9, 0]} scale={12} blur={2.2} opacity={0.8} far={10} />
 
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
           enableDamping
           dampingFactor={0.08}
-          minDistance={4.5}
-          maxDistance={10.5}
+          minDistance={2.8}
+          maxDistance={9}
           minPolarAngle={Math.PI / 5}
           maxPolarAngle={Math.PI / 2.05}
-          target={[0, 0.7, 0]}
+          target={[0, 0.18, 0]}
           rotateSpeed={0.75}
         />
       </Canvas>
+
+      {debugMode && (
+        <div className="absolute left-3 top-3 z-10 max-w-[260px] rounded-2xl border border-sky-300/30 bg-slate-950/70 p-3 text-[10px] uppercase tracking-[0.16rem] text-sky-100 backdrop-blur-sm">
+          <div className="mb-1 font-semibold text-sky-200">CAD Debug</div>
+          <div>Body: 1.9 x 0.86 x 0.79</div>
+          <div>Lid hinge: rear x-axis</div>
+          <div>Front face: +z</div>
+        </div>
+      )}
 
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-medium tracking-[0.28rem] text-slate-200 uppercase">

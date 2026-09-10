@@ -1,7 +1,7 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { MutableRefObject } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 export type CameraPreset = "front" | "right" | "back" | "left" | "interior";
 
@@ -9,11 +9,11 @@ export const cameraPresets: Record<
   CameraPreset,
   { position: [number, number, number]; target: [number, number, number] }
 > = {
-  front: { position: [0, 1.7, 6.75], target: [0, 0.7, 0] },
-  right: { position: [6.2, 1.6, 0.25], target: [0, 0.7, 0] },
-  back: { position: [0, 1.7, -6.75], target: [0, 0.7, 0] },
-  left: { position: [-6.2, 1.6, -0.25], target: [0, 0.7, 0] },
-  interior: { position: [0, 2.1, 3.3], target: [0, 0.8, 0] },
+  front: { position: [0, 1.15, 4.75], target: [0, 0.15, 0] },
+  right: { position: [4.75, 1.15, 0], target: [0, 0.15, 0] },
+  back: { position: [0, 1.2, -4.75], target: [0, 0.15, 0] },
+  left: { position: [-4.75, 1.15, 0], target: [0, 0.15, 0] },
+  interior: { position: [0, 1.45, 2.5], target: [0, 0.18, 0] },
 };
 
 export function CameraControls({

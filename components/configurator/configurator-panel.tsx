@@ -26,6 +26,7 @@ export function ConfiguratorPanel({
   const config = useConfigurationStore((state) => state.config);
   const applyConfig = useConfigurationStore((state) => state.applyConfig);
   const resetConfig = useConfigurationStore((state) => state.resetConfig);
+  const setField = useConfigurationStore((state) => state.setField);
 
   useEffect(() => {
     const urlConfig = readConfigFromUrl();
@@ -50,6 +51,13 @@ export function ConfiguratorPanel({
     [],
   );
 
+  const handlePresetChange = (preset: CameraPreset) => {
+    onPresetChange(preset);
+    if (preset === "interior") {
+      setField("lidOpen", true);
+    }
+  };
+
   return (
     <aside className="config-panel h-full overflow-y-auto bg-[#081a2a]/85 p-4 md:w-[420px] md:border-l md:border-slate-200/10 md:p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -70,13 +78,22 @@ export function ConfiguratorPanel({
         <div className="mb-3 flex items-center justify-between">
           <div className="text-[10px] uppercase tracking-[0.22rem] text-slate-400">Angles</div>
         </div>
-        <ViewPresetButtons value={selectedPreset} onChange={onPresetChange} />
+        <ViewPresetButtons value={selectedPreset} onChange={handlePresetChange} />
       </div>
 
       <div className="space-y-4">
         <div className="rounded-[1.5rem] border border-slate-200/10 bg-[#0d2337]/70 p-4">
-          <div className="mb-3 text-[10px] uppercase tracking-[0.2rem] text-slate-400">View</div>
-          <ViewPresetButtons value={selectedPreset} onChange={onPresetChange} />
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="text-[10px] uppercase tracking-[0.2rem] text-slate-400">View</div>
+            <button
+              type="button"
+              onClick={() => setField("lidOpen", !config.lidOpen)}
+              className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.18rem] text-sky-100"
+            >
+              {config.lidOpen ? "Close lid" : "Open lid"}
+            </button>
+          </div>
+          <ViewPresetButtons value={selectedPreset} onChange={handlePresetChange} />
         </div>
 
         <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2rem] text-slate-400">
