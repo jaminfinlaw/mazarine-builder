@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 
 import {
   defaultConfig,
-  readConfigFromUrl,
   type DockBoxConfig,
 } from "@/lib/configuration";
 
@@ -20,14 +19,13 @@ interface ConfigurationState {
 
 const hydrateConfig = (incoming?: Partial<DockBoxConfig>): DockBoxConfig => ({
   ...defaultConfig,
-  ...(readConfigFromUrl() ?? {}),
   ...(incoming ?? {}),
 });
 
 export const useConfigurationStore = create<ConfigurationState>()(
   persist(
     (set) => ({
-      config: hydrateConfig(),
+      config: defaultConfig,
       setField: (key, value) =>
         set((state) => ({
           config: { ...state.config, [key]: value },
