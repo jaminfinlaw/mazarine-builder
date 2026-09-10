@@ -48,6 +48,7 @@ function DebugOverlay({
 
 export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) {
   const [isReady, setIsReady] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const config = useConfigurationStore((state) => state.config);
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
@@ -76,7 +77,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         <spotLight position={[0, 7.5, 3.5]} intensity={1.15} angle={0.35} penumbra={0.6} color="#f5f8ff" />
 
         <CameraControls preset={cameraPreset} controlsRef={controlsRef} />
-        <DockBoxModel config={config} />
+        <DockBoxModel config={config} onLoad={() => setModelsLoaded(true)} />
         <DebugOverlay enabled={debugMode} />
         <Environment preset="city" />
         <ContactShadows position={[0, -1.9, 0]} scale={12} blur={2.2} opacity={0.8} far={10} />
@@ -104,7 +105,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
         </div>
       )}
 
-      {!isReady && (
+      {(!isReady || !modelsLoaded) && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-medium tracking-[0.28rem] text-slate-200 uppercase">
           Loading model
         </div>

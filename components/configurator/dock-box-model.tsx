@@ -69,9 +69,17 @@ function CadMesh({
   );
 }
 
-export function DockBoxModel({ config }: { config: DockBoxConfig }) {
+export function DockBoxModel({ config, onLoad }: { config: DockBoxConfig; onLoad?: () => void }) {
   const lidRotation = config.lidOpen ? -1.08 : 0;
   const [logoTexture, setLogoTexture] = useState<Texture | null>(null);
+
+  // Notify parent when component mounts (models have been loaded by useGLTF hooks)
+  useEffect(() => {
+    if (onLoad) {
+      const timer = setTimeout(onLoad, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [onLoad]);
 
   useEffect(() => {
     // Cleanup: always clear texture when logo URL changes
@@ -283,16 +291,11 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
       })}
 
       {config.acrylicDividers !== "none" && (
-        <mesh position={[0, 0.2, 0.08]}>
-          <boxGeometry args={[0.05, 0.72, 1.0]} />
-          <meshStandardMaterial
-            color="#eaf2ff"
-            emissive={config.ledColor}
-            emissiveIntensity={0.5}
-            transparent
-            opacity={0.8}
-          />
-        </mesh>
+        <group position={[-0.8, 0.18, 0]}>
+          <Text position={[0, 0.42, 0]} fontSize={0.08} color={config.ledColor} anchorX="center" anchorY="middle">
+            1
+          </Text>
+        </group>
       )}
     </group>
   );
