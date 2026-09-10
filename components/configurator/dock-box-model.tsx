@@ -144,14 +144,6 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         </group>
       </group>
 
-      <CadMesh
-        file="/models/avc_insert.glb"
-        transform={cadTransforms.avcInsert.position}
-        colorOverride="#1f2937"
-        metalness={0.2}
-        roughness={0.8}
-      />
-
       <mesh position={[0, 0.32, 0.12]} castShadow>
         <boxGeometry args={[1.7, 0.56, 0.08]} />
         <meshStandardMaterial
