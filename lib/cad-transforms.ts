@@ -13,16 +13,19 @@ export const shellMaterial = {
 } as const;
 
 export const cadTransforms = {
-  body: { position: [0.26, -0.2, 0.08], rotation: [0, Math.PI, 0], scale: [1, 1, 1] },
+  // Each GLB was exported with a different origin. These offsets normalize all
+  // real CAD parts around the molded body center at [0, 0, 0].
+  body: { position: [1.2457, -1.0186, 0.5073], rotation: [0, 0, 0], scale: [1, 1, 1] },
   lid: {
-    hingePivot: [0.12, 0.45, -0.48],
-    relativePivotOffset: [0, 0.02, 0.36],
+    hingePivot: [0, 0.44, -0.393],
+    relativePivotOffset: [0, 0.091, 0.393],
     closedRotation: [0, 0, 0],
     openRotation: [-1.96, 0, 0],
-    mesh: { position: [0.12, 0.44, -0.12], rotation: [0, Math.PI, 0], scale: [1, 1, 1] },
+    mesh: { position: [0.9852, 0.5206, -1.1987], rotation: [0, 0, 0], scale: [1, 1, 1] },
   },
-  insideCover: { position: [0.06, -0.065, 0.06], rotation: [0, Math.PI, 0], scale: [1, 1, 1] },
-  avcInsert: { position: [0.0, -0.18, 0.08], rotation: [0, Math.PI, 0], scale: [1, 1, 1] },
+  // These two assets form the upright center AVC assembly in the box.
+  insideCover: { position: [-0.6612, -0.5561, 0.3073], rotation: [0, 0, 0], scale: [1, 1, 1] },
+  avcInsert: { position: [-0.7717, -0.5854, 0.4314], rotation: [0, 0, 0], scale: [1, 1, 1] },
 } as const;
 
 export const cadAssemblyNotes = {

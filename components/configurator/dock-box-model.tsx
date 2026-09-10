@@ -119,7 +119,6 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
 
       <group position={cadTransforms.lid.hingePivot}>
         <group rotation={lidRotation}>
-          <group position={[-cadTransforms.lid.hingePivot[0], -cadTransforms.lid.hingePivot[1], -cadTransforms.lid.hingePivot[2]]}>
           <CadMesh
             file="/models/lid.glb"
             transform={cadTransforms.lid.mesh}
@@ -127,26 +126,16 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
             metalness={shellMaterial.metalness}
             roughness={shellMaterial.roughness}
           />
-          <CadMesh
-            file="/models/inside_cover.glb"
-            transform={cadTransforms.insideCover}
-            colorOverride={shellMaterial.color}
-            metalness={shellMaterial.metalness}
-            roughness={shellMaterial.roughness}
-          />
-          <mesh position={[0, 0.32, 0.12]} castShadow>
-            <boxGeometry args={[1.7, 0.56, 0.03]} />
-            <meshStandardMaterial
-              color={config.insideArtwork.mode === "none" ? blackInterior : "#eef4ff"}
-              emissive={config.insideArtwork.mode === "none" ? "#000000" : config.ledColor}
-              emissiveIntensity={config.insideArtwork.mode === "none" ? 0 : 0.8}
-              metalness={0.32}
-              roughness={0.38}
-            />
-          </mesh>
-          </group>
         </group>
       </group>
+
+      <CadMesh
+        file="/models/inside_cover.glb"
+        transform={cadTransforms.insideCover}
+        colorOverride={shellMaterial.color}
+        metalness={shellMaterial.metalness}
+        roughness={shellMaterial.roughness}
+      />
 
       <CadMesh
         file="/models/avc_insert.glb"
@@ -155,6 +144,17 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         metalness={shellMaterial.metalness}
         roughness={shellMaterial.roughness}
       />
+
+      <mesh position={[0, 0.31, -0.38]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <planeGeometry args={[1.55, 0.5]} />
+        <meshStandardMaterial
+          color={config.insideArtwork.mode === "none" ? blackInterior : "#eef4ff"}
+          emissive={config.insideArtwork.mode === "none" ? "#000000" : config.ledColor}
+          emissiveIntensity={config.insideArtwork.mode === "none" ? 0 : 0.8}
+          metalness={0.32}
+          roughness={0.38}
+        />
+      </mesh>
 
       {Array.from({ length: storageCount }).map((_, index) => {
         const total = Math.max(storageCount, 2);
