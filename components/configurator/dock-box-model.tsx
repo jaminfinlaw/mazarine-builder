@@ -1,10 +1,12 @@
-import { Text, useGLTF, useTexture } from "@react-three/drei";
-import { useEffect, useMemo } from "react";
+import { Text, useGLTF } from "@react-three/drei";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  Texture,
+  TextureLoader,
 } from "three";
 
 import type { DockBoxConfig } from "@/lib/configuration";
@@ -69,7 +71,27 @@ function CadMesh({
 
 export function DockBoxModel({ config }: { config: DockBoxConfig }) {
   const lidRotation = config.lidOpen ? -1.08 : 0;
-  const logoTexture = useTexture(config.uploadedLogo || "");
+  const [logoTexture, setLogoTexture] = useState<Texture | null>(null);
+
+  useEffect(() => {
+    // Cleanup: always clear texture when logo URL changes
+    const cleanup = () => {
+      setLogoTexture(null);
+    };
+
+    // Only load if we have a URL
+    if (config.uploadedLogo) {
+      const loader = new TextureLoader();
+      loader.load(
+        config.uploadedLogo,
+        (texture) => setLogoTexture(texture),
+        undefined,
+        () => setLogoTexture(null),
+      );
+    }
+
+    return cleanup;
+  }, [config.uploadedLogo]);
 
   const storageCount =
     config.storageSystem === "six-piece"
