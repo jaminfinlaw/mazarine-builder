@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --background: #071726;
+  --panel: rgba(11, 25, 38, 0.92);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --muted: #9bb8d0;
+  --text: #edf6ff;
+  --accent: #7bd7ff;
+  --surface: #f5f1ea;
+  --surface-strong: #dfe8ee;
+  --shadow: rgba(3, 7, 18, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(33, 86, 129, 0.66), transparent 32%),
+    linear-gradient(180deg, #071726 0%, #0a2032 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+canvas {
+  touch-action: none;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .config-panel {
+    max-height: none;
+  }
+}
