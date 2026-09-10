@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
-import { Box3, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from "three";
+import { Box3, BoxHelper, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from "three";
 
 import type { CadNodeInfo, CadNodeMappings } from "./cad-node-manager";
 
@@ -10,6 +10,7 @@ const assemblyAsset = "/models/mazarine-assembly.glb";
 export function DockBoxModel({ mappings, selectedId, onNodes, onSelect }: { mappings: CadNodeMappings; selectedId: string | null; onNodes: (nodes: CadNodeInfo[]) => void; onSelect: (id: string) => void }) {
   const { scene } = useGLTF(assemblyAsset);
   const assembly = useMemo(() => scene.clone(true), [scene]);
+  const selectedObject = useMemo(() => selectedId ? assembly.getObjectByName(selectedId) ?? null : null, [assembly, selectedId]);
 
   useEffect(() => {
     const nodes: CadNodeInfo[] = [];
@@ -52,7 +53,7 @@ export function DockBoxModel({ mappings, selectedId, onNodes, onSelect }: { mapp
     });
   }, [assembly, mappings, selectedId]);
 
-  return <primitive object={assembly} scale={0.001} onClick={(event: ThreeEvent<MouseEvent>) => { event.stopPropagation(); onSelect(event.object.name || event.object.uuid); }} />;
+  return <group onClick={(event: ThreeEvent<MouseEvent>) => { event.stopPropagation(); onSelect(event.object.name || event.object.uuid); }}><primitive object={assembly} scale={0.001} />{selectedObject && <primitive object={new BoxHelper(selectedObject, "#22d3ee")} />}</group>;
 }
 
 useGLTF.preload(assemblyAsset);
