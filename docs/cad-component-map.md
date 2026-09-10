@@ -30,6 +30,35 @@ The F3Z archive is the authoritative component hierarchy source. It contains the
 
 ## Exported GLB hierarchy
 
-`mazarine-assembly.glb` is now the active viewer asset. Its full export hierarchy is `Scene > Node0 > Node1` through `Node22`; `Node1` through `Node22` are meshes. The exporter stripped every Fusion occurrence name and stored all child mesh transforms at `[0, 0, 0]`.
+`mazarine-assembly.glb` is now the active viewer asset. Its complete export hierarchy is:
+
+```text
+Scene
+	Node0 (Object3D)
+		Node1 (Mesh)
+			Node2 (Mesh)
+				Node3 (Mesh)
+					Node4 (Mesh)
+						Node5 (Mesh)
+							Node6 (Mesh)
+								Node7 (Mesh)
+									Node8 (Mesh)
+										Node9 (Mesh)
+											Node10 (Mesh)
+												Node11 (Mesh)
+													Node12 (Mesh)
+														Node13 (Mesh)
+															Node14 (Mesh)
+																Node15 (Mesh)
+																	Node16 (Mesh)
+																		Node17 (Mesh)
+																			Node18 (Mesh)
+																				Node19 (Mesh)
+																					Node20 (Mesh)
+																						Node21 (Mesh)
+																							Node22 (Mesh)
+```
+
+The exporter stripped every Fusion occurrence name and stored all child mesh transforms at `[0, 0, 0]`.
 
 No exported node can therefore be factually associated with a Fusion occurrence. `lib/cad-components.ts` records these mappings as `ambiguous-export`; real-CAD visibility toggles and a real-lid hinge animation require a re-export retaining occurrence names.

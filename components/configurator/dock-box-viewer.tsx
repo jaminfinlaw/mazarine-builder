@@ -7,6 +7,7 @@ import { CameraControls, type CameraPreset, cameraPresets } from "./camera-contr
 import { DockBoxModel } from "./dock-box-model";
 import { useConfigurationStore } from "./configuration-store";
 import { cadTransforms } from "@/lib/cad-transforms";
+import { CadNodeManager, type CadNodeInfo, type CadNodeMappings } from "./cad-node-manager";
 
 const subscribeToDebugMode = () => () => {};
 
@@ -85,6 +86,9 @@ function ModelLoader() {
 
 export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) {
   const [isReady, setIsReady] = useState(false);
+  const [nodes, setNodes] = useState<CadNodeInfo[]>([]);
+  const [mappings, setMappings] = useState<CadNodeMappings>({});
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const debugMode = useDebugMode();
   const { active, errors } = useProgress();
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
@@ -115,7 +119,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
 
         <CameraControls preset={cameraPreset} controlsRef={controlsRef} />
         <Suspense fallback={null}>
-          <DockBoxModel />
+          <DockBoxModel mappings={mappings} selectedId={selectedId} onNodes={setNodes} onSelect={setSelectedId} />
         </Suspense>
         <DebugOverlay enabled={debugMode} lidOpen={config.lidOpen} />
         <Environment preset="city" />
@@ -143,6 +147,8 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
           <div>Front face: +z</div>
         </div>
       )}
+
+      {debugMode && <CadNodeManager nodes={nodes} mappings={mappings} selectedId={selectedId} onChange={setMappings} onSelect={setSelectedId} />}
 
       {(!isReady || active || errors.length > 0) && <ModelLoader />}
     </div>
