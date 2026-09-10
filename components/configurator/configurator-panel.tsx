@@ -2,16 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { defaultConfig, readConfigFromUrl } from "@/lib/configuration";
+import { readConfigFromUrl } from "@/lib/configuration";
 import { useConfigurationStore } from "./configuration-store";
-import { DividerConfigurator } from "./divider-configurator";
-import { InteriorArtworkConfigurator } from "./interior-artwork-configurator";
-import { LedColorPicker } from "./led-color-picker";
-import { LogoConfigurator } from "./logo-configurator";
-import { SignConfigurator } from "./sign-configurator";
-import { StorageConfigurator } from "./storage-configurator";
 import { ConfigurationSummary } from "./configuration-summary";
 import { MobileStickyCTA } from "./mobile-sticky-cta";
+import { SimplifiedConfigurator } from "./simplified-configurator";
 import { ViewPresetButtons } from "./view-preset-buttons";
 import type { CameraPreset } from "./camera-controls";
 
@@ -26,12 +21,12 @@ export function ConfiguratorPanel({
   const config = useConfigurationStore((state) => state.config);
   const applyConfig = useConfigurationStore((state) => state.applyConfig);
   const resetConfig = useConfigurationStore((state) => state.resetConfig);
-  const setField = useConfigurationStore((state) => state.setField);
+  const updateConfig = useConfigurationStore((state) => state.updateConfig);
 
   useEffect(() => {
     const urlConfig = readConfigFromUrl();
     if (urlConfig) {
-      applyConfig({ ...defaultConfig, ...urlConfig });
+      applyConfig(urlConfig);
     }
   }, [applyConfig]);
 
@@ -46,7 +41,7 @@ export function ConfiguratorPanel({
   const handlePresetChange = (preset: CameraPreset) => {
     onPresetChange(preset);
     if (preset === "interior") {
-      setField("lidOpen", true);
+      updateConfig((current) => ({ ...current, lidOpen: true }));
     }
   };
 
@@ -79,7 +74,7 @@ export function ConfiguratorPanel({
             <div className="text-[10px] uppercase tracking-[0.2rem] text-slate-400">View</div>
             <button
               type="button"
-              onClick={() => setField("lidOpen", !config.lidOpen)}
+              onClick={() => updateConfig((current) => ({ ...current, lidOpen: !current.lidOpen }))}
               className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.18rem] text-sky-100"
             >
               {config.lidOpen ? "Close lid" : "Open lid"}
@@ -100,13 +95,7 @@ export function ConfiguratorPanel({
         </div>
 
         <div className="space-y-4">
-          <SignConfigurator title="Front LED Sign" keyName="frontSign" />
-          <SignConfigurator title="Back LED Sign" keyName="rearSign" />
-          <InteriorArtworkConfigurator />
-          <StorageConfigurator />
-          <DividerConfigurator />
-          <LogoConfigurator />
-          <LedColorPicker />
+          <SimplifiedConfigurator />
         </div>
       </div>
 

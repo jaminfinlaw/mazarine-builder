@@ -54,14 +54,15 @@ export function ConfigurationSummary({
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               ["Model", config.model],
-              ["Front sign", config.frontSign],
-              ["Rear sign", config.rearSign],
-              ["Interior artwork", config.interiorArtwork],
-              ["Storage system", config.storageSystem],
-              ["Acrylic dividers", config.acrylicDividers],
-              ["Logo mode", config.logoMode],
-              ["Logo text", config.logoText || "—"],
-              ["Font", config.selectedFont],
+              ["Front sign", config.signs.front ? "Enabled" : "Disabled"],
+              ["Rear sign", config.signs.back ? "Enabled" : "Disabled"],
+              ["Interior artwork", config.insideArtwork.mode],
+              ["Storage system", config.options.storageSystem ? "Enabled" : "Disabled"],
+              ["Divider / cooler panels", config.options.dividerCoolerPanels ? "Enabled" : "Disabled"],
+              ["Teak pop-up bar", config.options.teakPopUpBar ? "Enabled" : "Disabled"],
+              ["Logo mode", config.logo.mode],
+              ["Logo text", config.logo.text || "—"],
+              ["Font", config.logo.font],
               ["LED color", config.ledColor],
               ["Lid", config.lidOpen ? "Open" : "Closed"],
             ].map(([label, value]) => (

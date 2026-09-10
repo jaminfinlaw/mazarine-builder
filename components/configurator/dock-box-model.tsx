@@ -80,10 +80,11 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
     };
 
     // Only load if we have a URL
-    if (config.uploadedLogo) {
+    const activeLogo = config.logo.uploadedCleaned ?? config.logo.uploadedOriginal;
+    if (activeLogo) {
       const loader = new TextureLoader();
       loader.load(
-        config.uploadedLogo,
+        activeLogo,
         (texture) => setLogoTexture(texture),
         undefined,
         () => setLogoTexture(null),
@@ -91,36 +92,21 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
     }
 
     return cleanup;
-  }, [config.uploadedLogo]);
+  }, [config.logo.uploadedCleaned, config.logo.uploadedOriginal]);
 
-  const storageCount =
-    config.storageSystem === "six-piece"
-      ? 6
-      : config.storageSystem === "four-baskets"
-        ? 4
-        : 2;
+  const storageCount = config.options.storageSystem ? 6 : 0;
 
   const dividerPositions = useMemo(
     () =>
-      config.acrylicDividers === "none"
+      !config.options.dividerCoolerPanels
         ? []
         : [-0.8, 0, 0.8].map((x) => ({ x })),
-    [config.acrylicDividers],
+    [config.options.dividerCoolerPanels],
   );
 
-  const frontSignMaterial =
-    config.frontSign === "aluminum"
-      ? { color: "#dfe4eb", metalness: 1, roughness: 0.28 }
-      : config.frontSign === "acrylic"
-        ? { color: "#dfeaf5", metalness: 0.05, roughness: 0.18, transparent: true, opacity: 0.8 }
-        : null;
-
-  const rearSignMaterial =
-    config.rearSign === "aluminum"
-      ? { color: "#dfe4eb", metalness: 1, roughness: 0.28 }
-      : config.rearSign === "acrylic"
-        ? { color: "#dfeaf5", metalness: 0.05, roughness: 0.18, transparent: true, opacity: 0.8 }
-        : null;
+  const signMaterial = { color: "#dfeaf5", metalness: 0.05, roughness: 0.18, transparent: true, opacity: 0.8 };
+  const logoScale = config.logo.size === "small" ? 0.7 : config.logo.size === "large" ? 1.25 : 1;
+  const activeLogo = config.logo.uploadedCleaned ?? config.logo.uploadedOriginal;
 
   return (
     <group position={[0, -0.1, 0]} rotation={[0, 0, 0]} scale={[0.92, 0.92, 0.92]}>
@@ -144,12 +130,20 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         </group>
       </group>
 
+      <CadMesh
+        file="/models/avc_insert.glb"
+        transform={cadTransforms.avcInsert.position}
+        colorOverride="#1f2937"
+        metalness={0.2}
+        roughness={0.8}
+      />
+
       <mesh position={[0, 0.32, 0.12]} castShadow>
         <boxGeometry args={[1.7, 0.56, 0.08]} />
         <meshStandardMaterial
-          color={config.interiorArtwork === "none" ? blackInterior : "#eef4ff"}
-          emissive={config.interiorArtwork === "backlit" ? config.ledColor : "#000000"}
-          emissiveIntensity={config.interiorArtwork === "backlit" ? 0.8 : 0}
+          color={config.insideArtwork.mode === "none" ? blackInterior : "#eef4ff"}
+          emissive={config.insideArtwork.mode === "none" ? "#000000" : config.ledColor}
+          emissiveIntensity={config.insideArtwork.mode === "none" ? 0 : 0.8}
           metalness={0.32}
           roughness={0.38}
         />
@@ -159,7 +153,7 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         const total = Math.max(storageCount, 2);
         const x = -0.68 + (index / (total - 1)) * 1.36;
         return (
-          <group key={`${config.storageSystem}-${index}`} position={[x, -0.06, 0.05]}>
+          <group key={`storage-${index}`} position={[x, -0.06, 0.05]}>
             <mesh castShadow receiveShadow>
               <boxGeometry args={[0.42, 0.48, 0.98]} />
               <meshStandardMaterial color={blackInterior} metalness={0.4} roughness={0.4} />
@@ -175,9 +169,9 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
             <meshPhysicalMaterial
               color="#edf5ff"
               transparent
-              opacity={config.acrylicDividers === "etched" ? 0.75 : 0.9}
-              emissive={config.acrylicDividers === "etched" ? config.ledColor : "#000000"}
-              emissiveIntensity={config.acrylicDividers === "etched" ? 0.6 : 0}
+              opacity={0.9}
+              emissive="#000000"
+              emissiveIntensity={0}
               metalness={0.05}
               roughness={0.08}
             />
@@ -185,65 +179,57 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         </group>
       ))}
 
-      {frontSignMaterial && (
+      {config.signs.front && (
         <group position={[0, 0.1, 0.95]}>
           <mesh castShadow receiveShadow>
             <boxGeometry args={[1.6, 0.36, 0.06]} />
             <meshPhysicalMaterial
-              color={frontSignMaterial.color}
-              metalness={frontSignMaterial.metalness}
-              roughness={frontSignMaterial.roughness}
-              transparent={frontSignMaterial.transparent}
-              opacity={frontSignMaterial.opacity ?? 1}
-              emissive={config.frontSign === "acrylic" ? config.ledColor : "#000000"}
-              emissiveIntensity={config.frontSign === "acrylic" ? 0.9 : 0}
+              {...signMaterial}
+              emissive={config.ledColor}
+              emissiveIntensity={0.9}
             />
           </mesh>
           <Text
             position={[0, 0.03, 0.05]}
-            fontSize={0.18}
-            color={config.frontSign === "acrylic" ? "#ffffff" : "#0f172a"}
+            fontSize={0.18 * logoScale}
+            color="#ffffff"
             anchorX="center"
             anchorY="middle"
             maxWidth={1.4}
             outlineWidth={0.02}
-            outlineColor={config.frontSign === "acrylic" ? "#0f172a" : "#e2e8f0"}
+            outlineColor="#0f172a"
           >
-            {config.logoMode === "text" ? config.logoText || "AURORA" : "CUSTOM"}
+            {config.logo.mode === "text" ? config.logo.text || "MAZARINE" : "CUSTOM"}
           </Text>
         </group>
       )}
 
-      {rearSignMaterial && (
+      {config.signs.back && (
         <group position={[0, 0.1, -0.95]} rotation={[0, Math.PI, 0]}>
           <mesh castShadow receiveShadow>
             <boxGeometry args={[1.6, 0.36, 0.06]} />
             <meshPhysicalMaterial
-              color={rearSignMaterial.color}
-              metalness={rearSignMaterial.metalness}
-              roughness={rearSignMaterial.roughness}
-              transparent={rearSignMaterial.transparent}
-              opacity={rearSignMaterial.opacity ?? 1}
-              emissive={config.rearSign === "acrylic" ? config.ledColor : "#000000"}
-              emissiveIntensity={config.rearSign === "acrylic" ? 0.9 : 0}
+              {...signMaterial}
+              emissive={config.ledColor}
+              emissiveIntensity={0.9}
             />
           </mesh>
           <Text
             position={[0, 0.03, 0.05]}
-            fontSize={0.17}
-            color={config.rearSign === "acrylic" ? "#ffffff" : "#0f172a"}
+            fontSize={0.17 * logoScale}
+            color="#ffffff"
             anchorX="center"
             anchorY="middle"
             maxWidth={1.4}
             outlineWidth={0.02}
-            outlineColor={config.rearSign === "acrylic" ? "#0f172a" : "#e2e8f0"}
+            outlineColor="#0f172a"
           >
-            {config.logoMode === "text" ? config.logoText || "AURORA" : "CUSTOM"}
+            {config.logo.mode === "text" ? config.logo.text || "MAZARINE" : "CUSTOM"}
           </Text>
         </group>
       )}
 
-      {config.logoMode === "upload" && config.uploadedLogo && (
+      {config.logo.mode === "upload" && activeLogo && (
         <group position={[0, 0.16, 1.04]}>
           <mesh>
             <planeGeometry args={[1.1, 0.5]} />
@@ -264,11 +250,9 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
         );
       })}
 
-      {config.acrylicDividers !== "none" && (
+      {config.options.teakPopUpBar && (
         <group position={[-0.8, 0.18, 0]}>
-          <Text position={[0, 0.42, 0]} fontSize={0.08} color={config.ledColor} anchorX="center" anchorY="middle">
-            1
-          </Text>
+          <mesh position={[0.8, 0.65, 0]}><boxGeometry args={[1.4, 0.05, 0.42]} /><meshStandardMaterial color="#8a5a34" roughness={0.65} /></mesh>
         </group>
       )}
     </group>

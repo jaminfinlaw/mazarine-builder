@@ -1,51 +1,30 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import {
-  defaultConfig,
-  type DockBoxConfig,
-} from "@/lib/configuration";
+import { defaultConfig, migrateConfig, type DockBoxConfig } from "@/lib/configuration";
 
 interface ConfigurationState {
   config: DockBoxConfig;
-  setField: <K extends keyof DockBoxConfig>(
-    key: K,
-    value: DockBoxConfig[K],
-  ) => void;
-  applyConfig: (config: Partial<DockBoxConfig>) => void;
+  applyConfig: (config: unknown) => void;
+  updateConfig: (update: (config: DockBoxConfig) => DockBoxConfig) => void;
   resetConfig: () => void;
-  hydrate: (config: Partial<DockBoxConfig>) => void;
 }
-
-const hydrateConfig = (incoming?: Partial<DockBoxConfig>): DockBoxConfig => ({
-  ...defaultConfig,
-  ...(incoming ?? {}),
-});
 
 export const useConfigurationStore = create<ConfigurationState>()(
   persist(
     (set) => ({
       config: defaultConfig,
-      setField: (key, value) =>
-        set((state) => ({
-          config: { ...state.config, [key]: value },
-        })),
-      applyConfig: (config) =>
-        set((state) => ({
-          config: { ...state.config, ...config },
-        })),
-      resetConfig: () =>
-        set(() => ({
-          config: defaultConfig,
-        })),
-      hydrate: (config) =>
-        set(() => ({
-          config: hydrateConfig(config),
-        })),
+      applyConfig: (config) => set({ config: migrateConfig(config) }),
+      updateConfig: (update) => set((state) => ({ config: update(state.config) })),
+      resetConfig: () => set({ config: defaultConfig }),
     }),
     {
       name: "mazarine-custom-config",
       partialize: (state) => ({ config: state.config }),
+      merge: (persisted, current) => ({
+        ...current,
+        config: migrateConfig((persisted as { config?: unknown }).config),
+      }),
     },
   ),
 );
