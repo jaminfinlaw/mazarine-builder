@@ -115,7 +115,7 @@ export function DockBoxViewer({ cameraPreset }: { cameraPreset: CameraPreset }) 
 
         <CameraControls preset={cameraPreset} controlsRef={controlsRef} />
         <Suspense fallback={null}>
-          <DockBoxModel config={config} />
+          <DockBoxModel />
         </Suspense>
         <DebugOverlay enabled={debugMode} lidOpen={config.lidOpen} />
         <Environment preset="city" />

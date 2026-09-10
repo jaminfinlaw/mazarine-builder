@@ -28,6 +28,8 @@ The F3Z archive is the authoritative component hierarchy source. It contains the
 | `updated latch assembly` | hinges/hardware | Always visible. |
 | `3.0` | body candidate | Requires GLB export node inspection. |
 
-## Export verification required
+## Exported GLB hierarchy
 
-The web asset must retain these source occurrence names in its GLTF node hierarchy. The final mapping in `lib/cad-components.ts` must be updated from the exported GLB node names after the conversion completes. No alias or guessed node name is used in the running viewer before that verification.
+`mazarine-assembly.glb` is now the active viewer asset. Its full export hierarchy is `Scene > Node0 > Node1` through `Node22`; `Node1` through `Node22` are meshes. The exporter stripped every Fusion occurrence name and stored all child mesh transforms at `[0, 0, 0]`.
+
+No exported node can therefore be factually associated with a Fusion occurrence. `lib/cad-components.ts` records these mappings as `ambiguous-export`; real-CAD visibility toggles and a real-lid hinge animation require a re-export retaining occurrence names.
