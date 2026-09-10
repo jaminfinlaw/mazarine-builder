@@ -145,14 +145,6 @@ export function DockBoxModel({ config }: { config: DockBoxConfig }) {
       </group>
 
       <CadMesh
-        file="/models/inside_cover.glb"
-        transform={cadTransforms.insideCover.position}
-        colorOverride="#dfe3ea"
-        metalness={0.12}
-        roughness={0.7}
-      />
-
-      <CadMesh
         file="/models/avc_insert.glb"
         transform={cadTransforms.avcInsert.position}
         colorOverride="#1f2937"
