@@ -35,14 +35,6 @@ export function ConfiguratorPanel({
     }
   }, [applyConfig]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const encoded = btoa(JSON.stringify(config));
-      const nextUrl = `${window.location.pathname}?config=${encodeURIComponent(encoded)}`;
-      window.history.replaceState({}, "", nextUrl);
-    }
-  }, [config]);
-
   const summaryTitle = useMemo(
     () => [
       "MAZARINE",
